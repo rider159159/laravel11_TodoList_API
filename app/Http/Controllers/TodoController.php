@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 use App\Models\Todo;
+use App\Models\Image;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
@@ -10,7 +11,8 @@ class TodoController extends Controller
     // 獲得所有代辦事項
     public function index()
     {
-        return Todo::all();
+        $todos = Todo::with('images')->get();
+        return response()->json($todos);    
     }
     // 更新代辦事項是否完成狀態
     public function updateStatus(Request $request)
@@ -57,9 +59,16 @@ class TodoController extends Controller
                 'message' => $validated->errors(),
             ], 422);
         }
-        $todo->title = $request->title;
-        $todo->description = $request->description;
-        $todo->save();
+        $todo->update($request->only(['title', 'description']));
+
+            // 如果有新的圖片 URL，保存到 images 表
+        if ($request->has('image_url')) {
+            Image::create([
+                'todo_id' => $todo->id,
+                'image_url' => $request->image_url
+            ]);
+        }
+
 
         return response()->json([
             'status' => true,
@@ -87,7 +96,16 @@ class TodoController extends Controller
             ], 422);
         }
 
-        $todo = Todo::create($request->all());
+    // 創建新的 Todo
+    $todo = Todo::create($request->only(['title', 'description']));
+
+    // 如果有圖片 URL，保存到 images 表
+    if ($request->has('image_url')) {
+        Image::create([
+            'todo_id' => $todo->id,
+            'image_url' => $request->image_url
+        ]);
+    }
         return response()->json([
             'status' => true,
             'message' => '成功',
