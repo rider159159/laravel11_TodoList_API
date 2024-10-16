@@ -96,16 +96,16 @@ class TodoController extends Controller
             ], 422);
         }
 
-    // 創建新的 Todo
-    $todo = Todo::create($request->only(['title', 'description']));
+        // 創建新的 Todo
+        $todo = Todo::create($request->only(['title', 'description']));
 
-    // 如果有圖片 URL，保存到 images 表
-    if ($request->has('image_url')) {
-        Image::create([
-            'todo_id' => $todo->id,
-            'image_url' => $request->image_url
-        ]);
-    }
+        // 如果有圖片 URL，保存到 images 表
+        if ($request->has('image_url')) {
+            Image::create([
+                'todo_id' => $todo->id,
+                'image_url' => $request->image_url
+            ]);
+        }
         return response()->json([
             'status' => true,
             'message' => '成功',
